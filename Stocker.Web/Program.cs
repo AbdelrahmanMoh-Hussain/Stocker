@@ -7,7 +7,6 @@ using Stocker.Infrastructer.Repository;
 using Stocker.Infrastructer.Repository.Interfaces;
 using Stocker.Infrastructer.Service;
 using Stocker.Infrastructer.Service.Interfaces;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 

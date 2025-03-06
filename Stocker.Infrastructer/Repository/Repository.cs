@@ -102,11 +102,6 @@ namespace Stocker.Infrastructer.Repository
             _context.Set<T>().RemoveRange(entities);
         }
 
-        public object GetByIdAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<bool> IsExist(Expression<Func<T, bool>> filter)
         {
             return await _context.Set<T>().AnyAsync(filter);
