@@ -1,0 +1,42 @@
+﻿@model UserRegisterViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link href="~/css/loginandregistersytle.css" rel="stylesheet" />
+
+</head>
+<body>
+    <div class="container">
+        <h3 class="title">New Account</h3>
+        <form asp-action="Register" method="post">
+            <div class="text-danger" asp-validation-summary="All"></div>
+            <div class="input-group mb-4">
+                <label asp-for="Email"></label>
+                <input class="form-control rounded-8" asp-for="Email" placeholder="" />
+                <span class="text-danger" asp-validation-for="Email"></span>
+            </div>
+            <div class="input-group mb-4">
+                <label asp-for="Password"></label>
+                <input class="form-control rounded-8" asp-for="Password" placeholder="" />
+                <span class="text-danger" asp-validation-for="Password"></span>
+            </div>
+            <div class="input-group mb-4">
+                <label asp-for="ConfirmPassword"></label>
+                <input class="form-control rounded-8" asp-for="ConfirmPassword" placeholder="" />
+                <span class="text-danger" asp-validation-for="ConfirmPassword"></span>
+            </div>
+            <div class="w-100">
+                <button class="w-100 btn btn-success d-block rounded-8 mb-2" type="submit">Register</button>
+                <span>Already have an account ? <a asp-action="Login">Log In</a></span>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,197 @@
+﻿@model IEnumerable<UserStock>
+
+<style>
+    i:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+        color: forestgreen;
+    }
+    i{
+        font-size: 1.3rem;
+    }
+
+    @@media (max-width: 600px) {
+        
+
+        .table {
+            width: 80%;
+            height: 100%;
+        }
+
+        i {
+            font-size: 1rem;
+        }
+
+    }
+</style>
+
+<div class="d-flex justify-content-between">
+    <a class="btn btn-success mb-3" asp-action="BuyStock">Buy New Stock</a>
+    <div class="pt-2">Your Balance: <span id="userBalance" class="text-success fw-bold">@Model.First().User.Balance.ToString("C2")</span></div>
+</div>
+<table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>Code</th>
+            <th>Title</th>
+            <th>Price Per Share</th>
+            <th>Shares Count</th>
+            <th>Total</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var us in Model ?? Enumerable.Empty<UserStock>())
+        {
+            <tr>
+                <td>@us.Stock.Code</td>
+                <td>@us.Stock.CompanyName</td>
+                <td>@us.Stock.PricePerShare.ToString("C2")</td>
+                <td class="sharesCount">@us.ShareCount</td>
+                <td>@((us.ShareCount * us.Stock.PricePerShare).ToString("C2"))</td>
+                <td class="d-flex justify-content-around align-items-center h-100">
+                    <i data-userStockId="@us.Id" class="increaseShareBtn bi bi-caret-up-square-fill" data-toggle="tooltip" data-placement="bottom" title="Increase 1 Share"></i>
+                    <i data-userStockId="@us.Id" class="decreaseShareBtn bi bi-caret-down-square-fill" data-toggle="tooltip" data-placement="bottom" title="Decrease 1 Share"></i>
+                    <i data-userStockId="@us.Id" class="sellBtn bi bi-cash-stack" data-toggle="tooltip" data-placement="bottom" title="Sell the stock"></i>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+    Array.from(document.querySelectorAll('.increaseShareBtn')).forEach(function(element){
+            element.addEventListener('click', (e) => {
+                const userStockId = e.target.getAttribute('data-userStockId');
+                console.log(userStockId);
+                $.ajax({
+                    url: '@Url.Action("IncreaseShare", "Stock")',
+                    method: 'POST',
+                    data: {userStockId: userStockId, increaseBy: 1},
+                    success: function(response){
+                        if(response.success){
+                            const rowChildren = e.target.parentElement.parentElement.children;
+                            rowChildren[3].textContent = Number(rowChildren[3].textContent) + 1;
+
+                            const pricePerShare = parseFloat(rowChildren[2].textContent.replace(/[^0-9.-]+/g, ''));
+                            const newTotal = parseFloat(rowChildren[4].textContent.replace(/[^0-9.-]+/g, '')) + pricePerShare;
+                            rowChildren[4].textContent = newTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+                            const newBalance = parseFloat(document.getElementById('userBalance').textContent.replace(/[^0-9.-]+/g, '')) - pricePerShare;
+                            document.getElementById('userBalance').textContent = newBalance.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                            
+                            Swal.fire({
+                              position: "center",
+                              icon: "success",
+                              title: "Successfully increase your shares.",
+                              showConfirmButton: false,
+                              timer: 1500
+                            });
+                        }
+                        else{
+                            Swal.fire({
+                              position: "center",
+                              icon: "error",
+                              title: response.error,
+                              showConfirmButton: false,
+                              timer: 1500
+                            });
+                        }
+                    }
+                })
+            });
+    });
+
+    Array.from(document.querySelectorAll('.decreaseShareBtn')).forEach(function(element){
+            element.addEventListener('click', (e) => {
+                const userStockId = e.target.getAttribute('data-userStockId');
+                console.log(userStockId);
+                $.ajax({
+                    url: '@Url.Action("DecreaseShare", "Stock")',
+                    method: 'POST',
+                    data: {userStockId: userStockId, decreaseBy: 1},
+                    success: function(response){
+                        if(response.success){
+                            const rowChildren = e.target.parentElement.parentElement.children;
+                            rowChildren[3].textContent = Number(rowChildren[3].textContent) - 1;
+
+                            const pricePerShare = parseFloat(rowChildren[2].textContent.replace(/[^0-9.-]+/g, ''));
+                            const newTotal = parseFloat(rowChildren[4].textContent.replace(/[^0-9.-]+/g, '')) - pricePerShare;
+                            rowChildren[4].textContent = newTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+                            const newBalance = parseFloat(document.getElementById('userBalance').textContent.replace(/[^0-9.-]+/g, '')) + pricePerShare;
+                            document.getElementById('userBalance').textContent = newBalance.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+                            Swal.fire({
+                              position: "center",
+                              icon: "success",
+                              title: "Successfully decrease your shares.",
+                              showConfirmButton: false,
+                              timer: 1500
+                            });
+                        }
+                        else{
+                            Swal.fire({
+                              position: "center",
+                              icon: "error",
+                              title: response.error,
+                              showConfirmButton: false,
+                              timer: 1500
+                            });
+                        }
+                    }
+                })
+            });
+    });
+
+    Array.from(document.querySelectorAll('.sellBtn')).forEach(function(element){
+            element.addEventListener('click', (e) => {
+            const userStockId = e.target.getAttribute('data-userStockId');
+            console.log(userStockId);
+            $.ajax({
+                url: '@Url.Action("SellStock", "Stock")',
+                method: 'POST',
+                data: {userStockId: userStockId},
+                success: function(response){
+                        if(response.success){
+                            const row = e.target.parentElement.parentElement;
+                            row.remove();
+
+                            const rowChildren = row.children;
+                            const newBalance = parseFloat(document.getElementById('userBalance').textContent.replace(/[^0-9.-]+/g, '')) + (parseFloat(rowChildren[4].textContent.replace(/[^0-9.-]+/g, '')) * pricePerShare);
+                            document.getElementById('userBalance').textContent = newBalance.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+                            
+                            Swal.fire({
+                              position: "center",
+                              icon: "success",
+                              title: "Successfully decrease your shares.",
+                              showConfirmButton: false,
+                              timer: 1500
+                            });
+                        }
+                        else{
+                            Swal.fire({
+                              position: "center",
+                              icon: "error",
+                              title: response.error,
+                              showConfirmButton: false,
+                              timer: 1500
+                            });
+                        }
+                    }
+            })
+        })
+    });
+
+    $(document).ready(function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
